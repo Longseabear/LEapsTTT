@@ -2,7 +2,7 @@
 using TTT.Audio;
 using UnityEngine;
 
-namespace TTT
+namespace TTT.System
 {
     public class UltimateAudioManager : MonoBehaviour, IAudioVolume
     {
@@ -33,7 +33,15 @@ namespace TTT
         [Button("Play SFX")]
         public void Play(SFXBundle.SFX target, float _volume=1.0f)
         {
-            SFXBundle.Play(target, _volume);
+            AudioParameter param = new AudioParameter(_volume);
+            SFXBundle.Play(target, param);
         }
+
+        [Button("Play SFX 2")]
+        public void Play_latest(SFXBundle.SFX target, AudioParameter param)
+        {
+            SFXBundle.Play(target, param);
+        }
+
     }
 }

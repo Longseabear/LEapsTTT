@@ -4,18 +4,13 @@ using UnityEngine;
 
 namespace TTT.Rhythm
 {
-    [Serializable]
-    public class Timer
+    public interface ITimerable
     {
-        [ShowInInspector] public float StartTime { get; private set; }
-        [ShowInInspector] public float ElapsedTime => Time.time - StartTime;
+        public float StartTime { get; set; }
+        public float ElapsedTime { get; }
+        public float TimeScale { get; }
 
-        public void Initialize()
-        {
-            StartTime = Time.time; 
-        }
-
-        public override string ToString()
+        public string StringFormat()
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(ElapsedTime);
 
@@ -26,6 +21,76 @@ namespace TTT.Rhythm
                 timeSpan.Milliseconds);
 
             return timeString;
+        }
+
+        public ITimerable MakeSubTimer(float _startTime)
+        {
+            return new SubTimer(this, _startTime);
+        }
+    }
+
+    [DefaultExecutionOrder(-100)]
+    public class Timer : MonoBehaviour, ITimerable
+    {
+        public float StartTime { get; set; }
+        public float ElapsedTime { get; private set; }
+        [ShowInInspector] public float TimeScale { get; set; } = 1.0f;
+        
+        private bool isPaused = false;
+
+        public void Start()
+        {
+            StartTime = 0;
+            ElapsedTime = 0;
+            isPaused = false;
+        }
+
+        public void Update()
+        {
+            if (!isPaused)
+            {
+                ElapsedTime += Time.deltaTime * TimeScale;
+            }
+        }
+
+        public void Pause()
+        {
+            isPaused = true;
+        }
+
+        public void Resume()
+        {
+            isPaused = false;
+        }
+
+        public void Reset()
+        {
+            StartTime = 0;
+            ElapsedTime = 0;
+            isPaused = false;
+        }
+
+        public override string ToString()
+        {
+            return (this as ITimerable).StringFormat();
+        }
+    }
+
+    public class SubTimer : ITimerable
+    {
+        public float StartTime { get; set; }
+        public float ElapsedTime => Timer.ElapsedTime - StartTime;
+        public float TimeScale => Timer.TimeScale;
+        public ITimerable Timer { get; set; }
+
+        public SubTimer(ITimerable timer, float startTime)
+        {
+            Timer = timer;
+            StartTime = startTime;
+        }
+        public override string ToString()
+        {
+            return (this as ITimerable).StringFormat();
         }
     }
 }

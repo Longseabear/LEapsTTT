@@ -1,10 +1,10 @@
 ﻿using Sirenix.OdinInspector;
 using TMPro;
-using TTT.Audio;
+using TTT.Assets.Scripts.Rhythm;
+using TTT.Node;
 using TTT.Rhythm;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
-using TTT.UI;
 using ProgressBar = TTT.UI.ProgressBar;
 
 namespace TTT
@@ -18,11 +18,20 @@ namespace TTT
         [OnValueChanged("OnBPMChanged")]
         public float BPM = 60;
 
-        [SerializeReference] public Measure measure;
+
+        [OnValueChanged("TextVisualize")]
+        public int ROI_index;
+        public TextMeshProUGUI Text2;
+
+        private FlowNode _ROI_node = null;
+        void TextVisualize()
+        {
+            _ROI_node = System.UltimateFlowManager.Instance[ROI_index] as FlowNode;
+        }
 
         private void OnBPMChanged()
         {
-            _count = (int)Mathf.Ceil((_timer.ElapsedTime * BPM) / 60f - 1);
+            _count = (int)Mathf.Ceil((NodeProcessor.Timer.ElapsedTime * BPM) / 60f - 1);
             SetNextTriggerTime();
         }
 
@@ -31,32 +40,37 @@ namespace TTT
             nextTriggerTime = (float)(_count + 1) * (60f / BPM);
         }
 
-        private Timer _timer = new Timer();
-
         [ShowInInspector] private float nextTriggerTime;
         private int _count = 0;
+        
+        [SerializeReference] public NodeProcessor NodeProcessor;
+
+
+        void OnMeasureChanged(FlowNode node)
+        {
+            if(node is INormalizedValue inode)
+            {
+                ProgressBar.Bind(inode);
+            }
+        }
 
         void Start()
         {
-            _timer = new Timer();
-            _timer.Initialize();
-
-            measure.Initialize(_timer);
-            ProgressBar.Bind(measure);
+            NodeProcessor.Initialize();
+            NodeProcessor.OnNodeChanged += OnMeasureChanged;
+            ProgressBar.Bind(NodeProcessor.CurrentProcessedNode);
+            _ROI_node = NodeProcessor.Turns[1];
         }
 
         public void Update()
         {
-            if (_timer.ElapsedTime >= nextTriggerTime)
+            Text.text = NodeProcessor.Timer.ToString() + $" Bit: {_count}";
+
+            if(_ROI_node is not null)
             {
-                //UltimateAudioManager.Instance.Play(SFXBundle.SFX.drumsticks);
-                _count++;
-                SetNextTriggerTime();
+                Text2.text = _ROI_node.Timer.ToString() + $" Bit: {_count}";
             }
-
-            Text.text = _timer.ToString() + $" Bit: {_count}";
-
-            measure.Update();
+            NodeProcessor.Update();
         }
     }
 }
