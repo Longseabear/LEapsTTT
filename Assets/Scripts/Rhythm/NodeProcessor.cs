@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TTT.Node;
 using TTT.Rhythm;
+using TTT.Rhythm.Measures;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -42,11 +43,11 @@ namespace TTT.Assets.Scripts.Rhythm
                 Turns[i].Update();
                 if (Turns[i].IsFinish)
                 {
-                    Turns[i].Timer.StartTime += TotalLength;
+                    Turns[i].SetStartTime(Turns[i].StartTime + TotalLength);
                     Turns[i].Reset();
                 }
 
-                if(Turns[i].Timer.StartTime <= Timer.ElapsedTime && Timer.ElapsedTime < Turns[i].Timer.StartTime + Turns[i].Length)
+                if(Turns[i].StartTime <= Timer.ElapsedTime && Timer.ElapsedTime < Turns[i].StartTime + Turns[i].Length)
                 {
                     if(CurrentProcessedNode != Turns[i])
                     {

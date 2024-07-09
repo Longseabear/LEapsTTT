@@ -15,6 +15,7 @@ namespace TTT.Common
         [ShowInInspector] public string Name { get; private set; }
         public virtual void Register(FlowNode parent)
         {
+            _parent = parent;
             ID = UltimateFlowManager.Instance.Register(this);
 
             string ParentName = string.Empty;

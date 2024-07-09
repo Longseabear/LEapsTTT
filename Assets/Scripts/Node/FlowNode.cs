@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using System;
+using System.ComponentModel;
 using TTT.Common;
 using TTT.Rhythm;
 using UnityEngine;
@@ -22,18 +23,24 @@ namespace TTT.Node
         }
 
         [SerializeField] public float Length;
+
+        [Range(-1.0f, 1.0f), DefaultValue(0.0f)]
         [SerializeField] public float Pivot;
         [ShowInInspector] public float StartTime => Timer?.StartTime ?? 0;
+
+        [SerializeField] public float PreDelay = 0.0f;
 
         // FlowNode Idle
         // FlowNode Playing
         // FlowNode Finish
 
-        [ShowInInspector, ReadOnly] public NodeState State { get; private set; }
+        [ShowInInspector, Sirenix.OdinInspector.ReadOnly] public NodeState State { get; private set; }
 
+        public bool IsTimeOver => Timer.ElapsedTime >= Length;
         public bool IsFinish => State == NodeState.FINISH;
+        public bool IsPlaying => State == NodeState.PLAYING && ((FLOW_NODE_OPTION & FlowNodeOption.NonPlay)==0);
 
-        public ITimerable Timer { get; set; }
+        public ITimerable Timer { get; private set; }
 
         public float NormalizedValue => Mathf.Clamp01(Timer.ElapsedTime / Length);
 
@@ -70,9 +77,16 @@ namespace TTT.Node
 
         public abstract void Initialize(ITimerable timer);
 
+        public void SetStartTime(float startTime)
+        {
+            Timer.StartTime = startTime - Pivot * Length;
+            Timer.StartTime += PreDelay;
+        }
         public void SetTimer(ITimerable timer)
         {
             Timer = timer;
+            Timer.StartTime -= (Pivot * Length);
+            Timer.StartTime += PreDelay;
         }
 
         public virtual void Reset()

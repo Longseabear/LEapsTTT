@@ -1,6 +1,9 @@
 ﻿using Sirenix.OdinInspector;
+using Sirenix.OdinValidator.Editor;
 using TMPro;
 using TTT.Assets.Scripts.Rhythm;
+using TTT.Assets.Scripts.System;
+using TTT.Core;
 using TTT.Node;
 using TTT.Rhythm;
 using Unity.VisualScripting;
@@ -17,7 +20,6 @@ namespace TTT
         [PropertyRange(1f, 1000f)]
         [OnValueChanged("OnBPMChanged")]
         public float BPM = 60;
-
 
         [OnValueChanged("TextVisualize")]
         public int ROI_index;
@@ -56,10 +58,11 @@ namespace TTT
 
         void Start()
         {
+            NodeProcessor.Timer = UltimateGamePlay.Instance.Timer;
             NodeProcessor.Initialize();
             NodeProcessor.OnNodeChanged += OnMeasureChanged;
             ProgressBar.Bind(NodeProcessor.CurrentProcessedNode);
-            _ROI_node = NodeProcessor.Turns[1];
+            // _ROI_node = NodeProcessor.Turns[1];
         }
 
         public void Update()
@@ -70,6 +73,15 @@ namespace TTT
             {
                 Text2.text = _ROI_node.Timer.ToString() + $" Bit: {_count}";
             }
+
+
+            var result = UltimateGamePlay.Instance.UIBoard.Board.CheckFinish();
+            if (result.WinPlayer > 0)
+            {
+                Debug.Log($"Winner {result.WinPlayer}");
+                UltimateGamePlay.Instance.ClearBoard();
+            }
+
             NodeProcessor.Update();
         }
     }
