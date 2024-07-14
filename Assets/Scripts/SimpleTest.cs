@@ -1,12 +1,9 @@
 ﻿using Sirenix.OdinInspector;
-using Sirenix.OdinValidator.Editor;
 using TMPro;
-using TTT.Assets.Scripts.Rhythm;
-using TTT.Assets.Scripts.System;
-using TTT.Core;
 using TTT.Node;
-using TTT.Rhythm;
-using Unity.VisualScripting;
+using TTT.Players;
+using TTT.Rhythms;
+using TTT.System;
 using UnityEngine;
 using ProgressBar = TTT.UI.ProgressBar;
 
@@ -16,7 +13,10 @@ namespace TTT
     {
         public TextMeshProUGUI Text;
         public ProgressBar ProgressBar;
-        
+
+        public PlayerMeta Player1Meta;
+        public PlayerMeta Player2Meta;
+
         [PropertyRange(1f, 1000f)]
         [OnValueChanged("OnBPMChanged")]
         public float BPM = 60;
@@ -47,7 +47,6 @@ namespace TTT
         
         [SerializeReference] public NodeProcessor NodeProcessor;
 
-
         void OnMeasureChanged(FlowNode node)
         {
             if(node is INormalizedValue inode)
@@ -59,7 +58,7 @@ namespace TTT
         void Start()
         {
             NodeProcessor.Timer = UltimateGamePlay.Instance.Timer;
-            NodeProcessor.Initialize();
+            NodeProcessor.Initialize(new Hero(Player1Meta), new Enemy(Player2Meta));
             NodeProcessor.OnNodeChanged += OnMeasureChanged;
             ProgressBar.Bind(NodeProcessor.CurrentProcessedNode);
             // _ROI_node = NodeProcessor.Turns[1];

@@ -43,5 +43,9 @@ namespace TTT.System
             SFXBundle.Play(target, param);
         }
 
+        public SoundInfo GetInfo(SFXBundle.SFX target)
+        {
+            return SFXBundle.Info(target);
+        }
     }
 }

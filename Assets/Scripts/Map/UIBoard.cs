@@ -1,6 +1,5 @@
 ﻿using Sirenix.OdinInspector;
 using System.Collections.Generic;
-using TTT.Assets.Scripts.Map;
 using TTT.Core;
 using UnityEngine;
 

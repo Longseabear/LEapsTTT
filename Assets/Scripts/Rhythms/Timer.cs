@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace TTT.Rhythm
+namespace TTT.Rhythms
 {
     public interface ITimerable
     {

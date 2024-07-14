@@ -1,52 +1,57 @@
-﻿using Sirenix.OdinInspector;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TTT.Assets.Scripts.Map;
-using TTT.Assets.Scripts.System;
 using TTT.Core;
-using TTT.Core.Events;
-using TTT.GmaeObject;
-using TTT.Rhythm;
 using TTT.System;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 namespace TTT.Node
 {
     [Serializable]
-    public class RandomPlaceAction : Segment
+    public class RandomPlaceAction : PlaceAction
     {
-        [ShowInInspector, ReadOnly] private float _pivotPosition;
-
-        public Transform SymbolPrefab;
-
-        public float Height = 1.5f;
-        public float Speed = 5.0f;
-
-        private float _TimingOffset = 0.0f;
-
-        public override void Initialize(ITimerable timer)
+        [Serializable]
+        public class RandomPlaceActionMeta : PlaceActionMeta
         {
-            SetTimer(timer);
-            _pivotPosition = Pivot * Length;
+            public RandomPlaceActionMeta() : base() 
+            {
+                Length = 2.0f;
+                Pivot = 0.5f;
+            }
+            public RandomPlaceActionMeta(PlaceActionMeta rhs) : base(rhs)
+            {
+            }
+
+            public override FlowNode Build()
+            {
+                return new RandomPlaceAction(this);
+            }
+
+            public override FlowNodeMeta DeepCopy()
+            {
+                return new RandomPlaceActionMeta(this);
+            }
         }
+        public RandomPlaceAction(PlaceActionMeta meta) : base(meta)
+        {
+        }
+
+        public override FlowNode DeepCopy()
+        {
+            throw new NotImplementedException();
+        }
+        private float _timingOffset { get; set; }
 
         protected override void OnEnterPlay()
         {
             float minDelta = Mathf.Min(1.0f - Pivot, Pivot);
-            _TimingOffset = UnityEngine.Random.Range(-Length * minDelta, Length * minDelta);
-        }
-        protected override void OnPlayEnd()
-        {
+            _timingOffset = UnityEngine.Random.Range(-Length * minDelta, Length * minDelta);
         }
         protected override void OnPlay()
         {
-            if(State == NodeState.PLAYING && _pivotPosition + _TimingOffset >= Timer.ElapsedTime)
+            if(State == NodeState.PLAYING && _pivotPosition + _timingOffset < Timer.ElapsedTime)
             {
-                Debug.Log(State);
-                float SelectedTime = Timer.ElapsedTime;
-                float score = MathF.Abs(SelectedTime - _pivotPosition);
+                float score = GetScore();
 
                 Board board = UltimateGamePlay.Instance.UIBoard.Board;
                 List<Cell> freeCells = board.GetAllCell().Where(cell => cell.IsEnabled && !cell.IsAssigned).ToList();
@@ -56,18 +61,7 @@ namespace TTT.Node
                     var UIcell = UltimateGamePlay.Instance.UIBoard.CellToUICell[cell];
 
                     Vector3 spawnPosition = UIcell.transform.position;
-                    spawnPosition = new Vector3(spawnPosition.x + UnityEngine.Random.Range(-0.2f, 0.2f), Height, spawnPosition.z + UnityEngine.Random.Range(-0.2f, 0.2f));
-
-                    var instance = UltimatePrefabManager.Instance.Instantiate<Symbol>(spawnPosition, Quaternion.identity);
-                    
-                    instance.GetComponent<Rigidbody>().velocity = Vector3.down * Speed;
-                    instance.GetComponent<Rigidbody>().MovePosition(spawnPosition);
-                    instance.GetComponent<Rigidbody>().MoveRotation(Quaternion.identity);
-
-                    cell.Player = 2;
-
-                    instance.GetComponent<MeshRenderer>().material.color = Color.blue;
-                    Debug.Log("Finish");
+                    PlaceSymbol(UIcell, spawnPosition, Color.blue);
                 }
                 ChangeState(NodeState.FINISH);
             }

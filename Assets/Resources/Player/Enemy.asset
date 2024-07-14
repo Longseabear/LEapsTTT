@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dc8b2176d71f7748a69266864f340f5, type: 3}
+  m_Name: Enemy
+  m_EditorClassIdentifier: 
+  HP: 10
+  Power: 8
+  PlaceAttribute:
+    Height: 1.5
+    PlaceNoiseIntensity:
+      MinX: -0.2
+      MinY: -0.2
+      MaxX: 0.2
+      MaxY: 0.2
+    BaseSpeed: 8
+  SimplePlaceActionMeta:
+    rid: 5401145584616734720
+  references:
+    version: 2
+    RefIds:
+    - rid: 5401145584616734720
+      type: {class: PlaceActionMeasure/PlaceActionMeasureMeta, ns: TTT.Rhythms.Measures, asm: Assembly-CSharp}
+      data:
+        Length: 2
+        Pivot: 0
+        PreDelay: 0
+        PlaceActionMeta:
+          rid: 5401145584616734721
+        NodePosition: 1.75
+    - rid: 5401145584616734721
+      type: {class: RandomPlaceAction/RandomPlaceActionMeta, ns: TTT.Node, asm: Assembly-CSharp}
+      data:
+        Length: 2
+        Pivot: 0
+        PreDelay: 0

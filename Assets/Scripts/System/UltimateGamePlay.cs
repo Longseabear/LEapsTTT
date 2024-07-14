@@ -1,19 +1,11 @@
 ﻿using Sirenix.OdinInspector;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TTT.Core;
 using TTT.GmaeObject;
 using TTT.Map;
-using TTT.Rhythm;
-using TTT.System;
 using UnityEngine;
-using Timer = TTT.Rhythm.Timer;
+using Timer = TTT.Rhythms.Timer;
 
-namespace TTT.Assets.Scripts.System
+namespace TTT.System
 {
     [RequireComponent(typeof(Timer)), RequireComponent(typeof(UIBoard))]
     public partial class UltimateGamePlay : MonoBehaviour
@@ -98,7 +90,7 @@ namespace TTT.Assets.Scripts.System
         [Button("Clear Board")]
         public void ClearBoard()
         {
-            UltimatePrefabManager.Instance.GetActiveInstances<Symbol>().ForEach(symbol => symbol.Release());
+            UltimatePrefabManager.Instance.GetActiveInstances<Symbol>().ForEach(symbol => symbol.ReleaseSmooth());
             UIBoard.Initialize();
         }
     }

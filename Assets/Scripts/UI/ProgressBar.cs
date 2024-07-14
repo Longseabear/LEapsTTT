@@ -1,4 +1,4 @@
-﻿using TTT.Rhythm;
+﻿using TTT.Rhythms;
 using UnityEngine;
 using UnityEngine.UI;
 

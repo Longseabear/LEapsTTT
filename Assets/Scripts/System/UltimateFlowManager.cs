@@ -1,7 +1,11 @@
 ﻿using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TTT.Common;
+using TTT.GmaeObject;
+using TTT.Node;
+using TTT.Rhythms;
 using UnityEngine;
 
 namespace TTT.System
@@ -11,9 +15,34 @@ namespace TTT.System
         [Header("Instance")]
         public static UltimateFlowManager Instance;
 
-        private const int MAX_FLOW_NODE_NUM = 1028;
+
+        [Header("Debug Module")]
+
+        [OnValueChanged("SetFlowNode")]
+        public int TargetID;
+        public BeatDoll VisualizeObject;
+        [SerializeReference] public FlowNode FlowNode;
+        private void SetFlowNode()
+        {
+            if (FlowNode is IRhythmProvider provider && VisualizeObject != null)
+            {
+                provider.Unsubscribe(VisualizeObject);
+            }
+
+            if (TargetID > FlowNodes.Length) return;
+            FlowNode = FlowNodes[TargetID] as FlowNode;
+
+            if (FlowNode is IRhythmProvider provider2 && VisualizeObject != null)
+            {
+                provider2.Subscribe(VisualizeObject);
+            }
+        }
+
+
+        [Header("FlowNodes")]
         public FlowNodeEntity[] FlowNodes = new FlowNodeEntity[MAX_FLOW_NODE_NUM];
         Dictionary<string, FlowNodeEntity> NameToFlowNode = new Dictionary<string, FlowNodeEntity>();
+        private const int MAX_FLOW_NODE_NUM = 1028;
 
         public struct FlowInformation
         {

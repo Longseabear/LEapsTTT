@@ -1,9 +1,9 @@
 ﻿using Sirenix.OdinInspector;
-using TTT.Assets.Scripts.System;
 using TTT.Core;
+using TTT.System;
 using UnityEngine;
 
-namespace TTT.Assets.Scripts.Map
+namespace TTT.Map
 {
     public class UICell : MonoBehaviour
     {

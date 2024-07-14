@@ -1,4 +1,4 @@
-﻿namespace TTT.Rhythm
+﻿namespace TTT.Rhythms
 {
     public interface INormalizedValue
     {

@@ -3,9 +3,20 @@ using UnityEngine;
 using FMODUnity;
 using FMOD;
 using System.IO;
+using UnityEngine.UIElements;
 
 namespace TTT.Audio
 {
+    public struct SoundInfo
+    {
+        public float Length;
+
+        public SoundInfo(float soundLength)
+        {
+            Length = soundLength;
+        }
+    }
+
     public interface IAudioVolume
     {
         float Volume { get; set; }
@@ -63,7 +74,7 @@ namespace TTT.Audio
             Channels = new Channel[count];
             pitchDSPs = new DSP[count];
 
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 string fileName = $"{Enum.GetName(typeof(SFX), i)}.ogg";
                 RuntimeManager.CoreSystem.createSound(Path.Combine(Application.streamingAssetsPath, BundleFolderName, fileName), MODE.CREATESAMPLE, out Sounds[i]);
@@ -90,6 +101,26 @@ namespace TTT.Audio
             channel.setPaused(true);
             channel.setVolume((param.Volume * Volume * ParentVolume));
             channel.setPaused(false);
+        }
+
+        public SoundInfo Info(SFX target)
+        {
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying && Sounds == null)
+            {
+                Load();
+            }
+#endif
+            uint lengthInMilliseconds = 0;
+            FMOD.RESULT result = Sounds[(int)target].getLength(out lengthInMilliseconds, FMOD.TIMEUNIT.MS);
+
+            if (result != FMOD.RESULT.OK)
+            {
+                throw new Exception("Error getting sound length: " + result);
+            }
+
+            return new SoundInfo((float)lengthInMilliseconds / 1000f);
         }
     }
 }

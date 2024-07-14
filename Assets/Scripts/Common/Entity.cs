@@ -6,16 +6,16 @@ namespace TTT.Common
 {
     public abstract class Entity
     {
-        [ShowInInspector] public int ID { get; set; }
+        [ShowInInspector, ReadOnly] public int ID { get; set; }
     }
 
     public abstract class FlowNodeEntity : Entity
     {
-        private FlowNode _parent;
-        [ShowInInspector] public string Name { get; private set; }
+        public FlowNode Parent { get; private set; }
+        [ShowInInspector, ReadOnly] public string Name { get; private set; }
         public virtual void Register(FlowNode parent)
         {
-            _parent = parent;
+            Parent = parent;
             ID = UltimateFlowManager.Instance.Register(this);
 
             string ParentName = string.Empty;
