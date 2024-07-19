@@ -12,6 +12,13 @@ namespace TTT.Common
         public const int sortingOrderDefault = 5000;
 
 
+        public static void Swap<T>(ref T lhs, ref T rhs)
+        {
+            T temp = lhs;
+            lhs = rhs;
+            rhs = temp;
+        }
+
         public static GameObject CreateWorldSprite(string name, Sprite sprite, Vector3 position, Vector3 localScale, int sortingOrder, Color color)
         {
             return CreateWorldSprite(null, name, sprite, position, localScale, sortingOrder, color);

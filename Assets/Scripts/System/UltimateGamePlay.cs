@@ -1,7 +1,12 @@
 ﻿using Sirenix.OdinInspector;
+using System.Collections.Generic;
 using TTT.Core;
 using TTT.GmaeObject;
 using TTT.Map;
+using TTT.Measures;
+using TTT.Players;
+using TTT.Rhythms;
+using TTT.Simulation;
 using UnityEngine;
 using Timer = TTT.Rhythms.Timer;
 
@@ -10,24 +15,30 @@ namespace TTT.System
     [RequireComponent(typeof(Timer)), RequireComponent(typeof(UIBoard))]
     public partial class UltimateGamePlay : MonoBehaviour
     {
-        [Header("Instance")]
-        public static UltimateGamePlay Instance;
-
-        [ShowInInspector] public Timer Timer { get; private set; }
+        public static UltimateGamePlay Instance { get; private set; }
         [ShowInInspector] public UIBoard UIBoard { get; private set; }
+        [ShowInInspector] public Measure CurrentMeasure { get; set; }
+        [ShowInInspector] public Player Attacker { get;  set; }
+        [ShowInInspector] public Player Defender { get; set; }
 
         public Board Board => UIBoard.Board;
 
         public void OnValidate()
         {
-            Timer = GetComponent<Timer>();
             UIBoard = GetComponent<UIBoard>();
         }
 
         public void Initialize()
         {
-            Timer = GetComponent<Timer>();
             UIBoard = GetComponent<UIBoard>();
+        }
+
+
+        public void PlayerSwap()
+        {
+            var tmp = Attacker;
+            Attacker = Defender;
+            Defender = tmp;
         }
 
         public void Awake()
@@ -40,6 +51,7 @@ namespace TTT.System
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Initialize();
         }
     }
 
@@ -90,8 +102,9 @@ namespace TTT.System
         [Button("Clear Board")]
         public void ClearBoard()
         {
+            Debug.Log($"Request Clear Board {UltimatePrefabManager.Instance.GetActiveInstances<Symbol>().Count}");
             UltimatePrefabManager.Instance.GetActiveInstances<Symbol>().ForEach(symbol => symbol.ReleaseSmooth());
-            UIBoard.Initialize();
+            // UIBoard.Initialize();
         }
     }
 }

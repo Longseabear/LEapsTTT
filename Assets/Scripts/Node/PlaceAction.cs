@@ -1,7 +1,9 @@
 ﻿using Sirenix.OdinInspector;
 using System;
+using TTT.Actions;
 using TTT.GmaeObject;
 using TTT.Map;
+using TTT.Physics;
 using TTT.Players;
 using TTT.Rhythms;
 using TTT.System;
@@ -11,50 +13,44 @@ using UnityEngine;
 namespace TTT.Node
 {
     [Serializable]
-    public abstract class PlaceAction : Segment, IPlayerBindable
+    public abstract class PlaceAction : Segment
     {
         public abstract class PlaceActionMeta : SegmentMeta
         {
             public PlaceActionMeta() : base() { }
-            public PlaceActionMeta(PlaceActionMeta rhs) : base(rhs) { }
+            public PlaceActionMeta(PlaceActionMeta rhs) : base(rhs) 
+            {
+            }
         }
+        public Player Player => UltimateGamePlay.Instance.Attacker;
+
+        protected float _pivotPosition { get; set; }
 
         public PlaceAction(PlaceActionMeta meta) : base(meta)
         {
         }
 
-        [ShowInInspector, ReadOnly] protected float _pivotPosition { get; set; }
-
-        public Player Player { get; private set; }
-        public void Bind(Player player)
+        protected override void InitializeInternal()
         {
-            Player = player;
+            // Note: Playable Time not correct in initialization time. Just use timeclip information
+            _pivotPosition = Pivot * (float)Length;
         }
 
-        public override void Initialize(ITimerable timer)
-        {
-            SetTimer(timer);
-            _pivotPosition = Pivot * Length;
-        }
-
-        protected void PlaceSymbol(UICell targetUICell, Vector3 position, Color color)
+        protected void PlaceSymbol(UICell targetUICell, Vector3 position)
         {
             position = GetPlacePosition(position);
+           
+            if(ParentMeasure != null)
+            {
+                ParentMeasure.OccurEvent(new SimplePlaceActionEvent(ParentMeasure, ParentMeasure.Runtime.Attacker, position, GetPlacePower()));
+            }
 
-            var instance = UltimatePrefabManager.Instance.Instantiate<Symbol>(position, Quaternion.identity);
-
-            instance.GetComponent<Rigidbody>().velocity = Vector3.down * GetPlacePower();
-            instance.GetComponent<Rigidbody>().MovePosition(position);
-            instance.GetComponent<Rigidbody>().MoveRotation(Quaternion.identity);
-
-            targetUICell.Cell.Player = Player.PlayerID;
-
-            instance.GetComponent<MeshRenderer>().material.color = color;
+            targetUICell.Cell.Player = ParentMeasure.Runtime.Attacker.PlayerID;
         }
 
         protected float GetScore()
         {
-            float SelectedTime = Timer.ElapsedTime;
+            float SelectedTime = (float)CurrentTime;
             float score = MathF.Abs(SelectedTime - _pivotPosition);
             return score;
         }

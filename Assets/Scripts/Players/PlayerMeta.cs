@@ -1,5 +1,6 @@
 ﻿using System;
-using TTT.Rhythms.Measures;
+using TTT.Measures;
+using TTT.Node;
 using UnityEngine;
 
 namespace TTT.Players
@@ -9,9 +10,9 @@ namespace TTT.Players
     {
         public int HP;
         public float Power;
+        public Color SymbolColor;
 
         public PlaceAttribute PlaceAttribute;
-
-        [SerializeReference] public PlaceActionMeasure.PlaceActionMeasureMeta SimplePlaceActionMeta;
+        [SerializeReference] public SimpleMeasureMeta SimplePlaceActionMeta;
     }
 }

@@ -93,4 +93,47 @@ namespace TTT.Rhythms
             return (this as ITimerable).StringFormat();
         }
     }
+
+    public class ManualTimer : ITimerable
+    {
+        public float StartTime { get; set; }
+        public float ElapsedTime { get; private set; }
+        [ShowInInspector] public float TimeScale { get; set; } = 1.0f;
+
+        private bool isPaused = false;
+
+        public void Start()
+        {
+            StartTime = 0;
+            ElapsedTime = 0;
+            isPaused = false;
+        }
+
+        public void Set(float deltaTime)
+        {
+            ElapsedTime = deltaTime;
+        }
+
+        public void Pause()
+        {
+            isPaused = true;
+        }
+
+        public void Resume()
+        {
+            isPaused = false;
+        }
+
+        public void Reset()
+        {
+            StartTime = 0;
+            ElapsedTime = 0;
+            isPaused = false;
+        }
+
+        public override string ToString()
+        {
+            return (this as ITimerable).StringFormat();
+        }
+    }
 }

@@ -1,5 +1,4 @@
-﻿using TTT.Core.Events;
-using Unity.VisualScripting;
+﻿using TTT.Rhythms;
 using UnityEngine;
 
 namespace TTT.System
@@ -18,5 +17,9 @@ namespace TTT.System
         public virtual void OnDestroyed()
         {
         }
+
+
+        public abstract object Save();
+        public abstract void Restore(object parameter);
     }
 }

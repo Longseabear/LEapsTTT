@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HP: 10
   Power: 8
+  SymbolColor: {r: 0.3721493, g: 0.2896618, b: 0.8037735, a: 1}
   PlaceAttribute:
     Height: 1.5
     PlaceNoiseIntensity:
@@ -22,23 +23,4 @@ MonoBehaviour:
       MaxX: 0.2
       MaxY: 0.2
     BaseSpeed: 8
-  SimplePlaceActionMeta:
-    rid: 5401145584616734720
-  references:
-    version: 2
-    RefIds:
-    - rid: 5401145584616734720
-      type: {class: PlaceActionMeasure/PlaceActionMeasureMeta, ns: TTT.Rhythms.Measures, asm: Assembly-CSharp}
-      data:
-        Length: 2
-        Pivot: 0
-        PreDelay: 0
-        PlaceActionMeta:
-          rid: 5401145584616734721
-        NodePosition: 1.75
-    - rid: 5401145584616734721
-      type: {class: RandomPlaceAction/RandomPlaceActionMeta, ns: TTT.Node, asm: Assembly-CSharp}
-      data:
-        Length: 2
-        Pivot: 0
-        PreDelay: 0
+  SimplePlaceActionMeta: {fileID: 11400000, guid: ff9c896b980187343a63537e766d8c94, type: 2}

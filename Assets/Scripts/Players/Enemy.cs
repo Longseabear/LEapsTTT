@@ -1,5 +1,5 @@
 ﻿using System;
-using TTT.Rhythms.Measures;
+using TTT.Measures;
 
 namespace TTT.Players
 {
@@ -9,9 +9,9 @@ namespace TTT.Players
         public Enemy(PlayerMeta playerMeta) : base(playerMeta)
         {
         }
-        public override MeasureNode GetNextMeasure()
+        public override Measure EvaluateAttackMeasure()
         {
-            return SimplePlaceAction;
+            return SimpleAttackMeasure;
         }
     }
 }

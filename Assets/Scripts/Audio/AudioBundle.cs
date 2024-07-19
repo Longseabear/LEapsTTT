@@ -1,9 +1,12 @@
-﻿using System;
-using UnityEngine;
+﻿using FMOD;
 using FMODUnity;
-using FMOD;
+using System;
 using System.IO;
-using UnityEngine.UIElements;
+using UnityEngine;
+
+#if UNITY_EDITOR
+#endif
+
 
 namespace TTT.Audio
 {
@@ -27,11 +30,13 @@ namespace TTT.Audio
     {
         [SerializeField] public float Volume;
         [SerializeField] public float Pitch;
+        [SerializeField] public float StartTime;
 
-        public AudioParameter(float volume = 1.0f, float pitch = 1.0f) : this()
+        public AudioParameter(float volume = 1.0f, float pitch = 1.0f, float startTime = 0) : this()
         {
             Volume = volume;
             Pitch = pitch;
+            StartTime = startTime;
         }
     }
 
@@ -79,6 +84,7 @@ namespace TTT.Audio
                 string fileName = $"{Enum.GetName(typeof(SFX), i)}.ogg";
                 RuntimeManager.CoreSystem.createSound(Path.Combine(Application.streamingAssetsPath, BundleFolderName, fileName), MODE.CREATESAMPLE, out Sounds[i]);
                 RuntimeManager.CoreSystem.createDSPByType(DSP_TYPE.PITCHSHIFT, out pitchDSPs[i]);
+                
             }
 
             foreach (var channel in Channels)
@@ -90,17 +96,20 @@ namespace TTT.Audio
         public override void Play(SFX target, AudioParameter param)
         {
             int targetIndex = (int)target;
+
             Channel channel = Channels[targetIndex];
 
-            channel.stop();
-            RuntimeManager.CoreSystem.playSound(Sounds[targetIndex], ChannelGroup, false, out channel);
-
-            channel.addDSP(CHANNELCONTROL_DSP_INDEX.HEAD, pitchDSPs[targetIndex]);
+            // channel.stop();
+            RuntimeManager.CoreSystem.playSound(Sounds[targetIndex], ChannelGroup, false, out Channel newChannel);
+            
+            newChannel.addDSP(CHANNELCONTROL_DSP_INDEX.HEAD, pitchDSPs[targetIndex]);
             pitchDSPs[targetIndex].setParameterFloat((int)DSP_PITCHSHIFT.PITCH, param.Pitch);
 
-            channel.setPaused(true);
-            channel.setVolume((param.Volume * Volume * ParentVolume));
-            channel.setPaused(false);
+            newChannel.setPaused(true);
+            newChannel.setVolume((param.Volume * Volume * ParentVolume));
+            newChannel.setPosition((uint)(param.StartTime * 1000.0f), FMOD.TIMEUNIT.MS);
+
+            newChannel.setPaused(false);
         }
 
         public SoundInfo Info(SFX target)

@@ -19,8 +19,6 @@ namespace TTT.Node
         {
             public SimplePlaceActionMeta() : base()
             {
-                Length = 2.0f;
-                Pivot = 0.5f;
             }
             public SimplePlaceActionMeta(PlaceActionMeta rhs) : base(rhs)
             {
@@ -45,19 +43,19 @@ namespace TTT.Node
         {
             UltimateGamePlay.Instance.UIBoard.Board.CellClickEvent.Subscribe(this);
         }
-        protected override void OnPlayEnd()
+        protected override void OnEndPlay()
         {
             UltimateGamePlay.Instance.UIBoard.Board.CellClickEvent.Unsubscribe(this);
         }
-        protected override void OnPlay()
+        public override void OnPlay()
         {
         }
 
         public void Recieve(CellEvents.OnMouseDown data)
         {
-            float SelectedTime = Timer.ElapsedTime;
+            float SelectedTime = (float)CurrentTime;
             float score = GetScore();
-            Debug.Log($"Global Selec Time {data.Time}, Local Select Time: {SelectedTime}, Timing Score: {score}");
+            Debug.Log($"Global Selec Time {data.Time}, Local Select Time: {SelectedTime}, Clip duration: {Length}, Timing Score: {score}");
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); 
             RaycastHit hit;
@@ -66,7 +64,7 @@ namespace TTT.Node
             {
                 var UIcell = UltimateGamePlay.Instance.UIBoard.CellToUICell[data.Cell];
                 Vector3 spawnPosition = hit.point;
-                PlaceSymbol(UIcell, spawnPosition, Color.red);
+                PlaceSymbol(UIcell, spawnPosition);
             }
 
             ChangeState(NodeState.FINISH);

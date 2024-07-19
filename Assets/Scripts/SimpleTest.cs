@@ -1,4 +1,6 @@
-﻿using Sirenix.OdinInspector;
+﻿
+using Cysharp.Threading.Tasks;
+using Sirenix.OdinInspector;
 using TMPro;
 using TTT.Node;
 using TTT.Players;
@@ -55,33 +57,48 @@ namespace TTT
             }
         }
 
-        void Start()
+        //public async void Update()
+        //{
+        //    //Text.text = NodeProcessor.Timer.ToString() + $" Bit: {_count}";
+        //    Text.text = $"{UltimateSimulationManager.Instance.SimulationParam.ProcessedFrame}/{UltimateSimulationManager.Instance.SimulationParam.ProcessedMeasure} : {UltimateSimulationManager.Instance.SimulationParam.MainTimer.ToString()}";
+        //}
+
+        private async void Start()
         {
-            NodeProcessor.Timer = UltimateGamePlay.Instance.Timer;
-            NodeProcessor.Initialize(new Hero(Player1Meta), new Enemy(Player2Meta));
-            NodeProcessor.OnNodeChanged += OnMeasureChanged;
-            ProgressBar.Bind(NodeProcessor.CurrentProcessedNode);
-            // _ROI_node = NodeProcessor.Turns[1];
+            UltimateSimulationManager.Instance.Initialize(new Hero(Player1Meta), new Enemy(Player2Meta));
+            //await MyUniTask();
         }
-
-        public void Update()
+        private async UniTask MyUniTask()
         {
-            Text.text = NodeProcessor.Timer.ToString() + $" Bit: {_count}";
-
-            if(_ROI_node is not null)
-            {
-                Text2.text = _ROI_node.Timer.ToString() + $" Bit: {_count}";
-            }
-
-
             var result = UltimateGamePlay.Instance.UIBoard.Board.CheckFinish();
             if (result.WinPlayer > 0)
             {
                 Debug.Log($"Winner {result.WinPlayer}");
                 UltimateGamePlay.Instance.ClearBoard();
+                await UniTask.Delay(2000);
             }
 
             NodeProcessor.Update();
+        }
+
+        bool _isProcessing = false;
+        public async void Update()
+        {
+            Text.text = UltimateSimulationManager.Instance.SimulationParam.MainTimer.ToString();
+            Text2.text = UltimateSimulationManager.Instance.SimulationParam.LocalTimer.ToString();
+
+            if (_isProcessing) return;
+
+            _isProcessing = true;
+
+            try
+            {
+                await MyUniTask();
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
         }
     }
 }

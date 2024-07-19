@@ -14,7 +14,7 @@ namespace TTT.GmaeObject
         public Vector3 OriginalScale;
 
 
-        public TimelineAsset testAsset;
+        public TimelineAsset testAsset;     
 
         public void Awake()
         {

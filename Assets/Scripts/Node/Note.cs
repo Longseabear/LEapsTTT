@@ -1,10 +1,11 @@
 ﻿using Sirenix.OdinInspector;
 using System;
 using TTT.Audio;
+using TTT.Common;
 using TTT.Rhythms;
 using TTT.System;
 using UnityEngine;
-using TTT.Common;
+using UnityEngine.Playables;
 
 namespace TTT.Node
 {
@@ -17,7 +18,7 @@ namespace TTT.Node
         {
             public NoteMeta()
             {
-                Length = 0;
+
             }
             public NoteMeta(NoteMeta rhs) : base(rhs)
             {
@@ -26,31 +27,6 @@ namespace TTT.Node
 
         protected Note(NoteMeta meta) : base(meta)
         {
-        }
-
-        public override void Initialize(ITimerable timer)
-        {
-            SetTimer(timer);
-            Length = 0;
-        }
-        public override void Update()
-        {
-            if (State == NodeState.FINISH)
-            {
-                OnFinish();
-                return;
-            }
-
-            if (Timer.ElapsedTime >= 0 && State == NodeState.IDLE)
-            {
-                ChangeState(NodeState.PLAYING);
-                if(IsPlaying) OnPlay();
-                ChangeState(NodeState.FINISH);
-            }
-            else
-            {
-                OnIdle();
-            }
         }
     }
     public class Comma : FlowNode
@@ -64,7 +40,6 @@ namespace TTT.Node
             }
             public CommaMeta()
             {
-                Length = 0;
             }
             public CommaMeta(CommaMeta rhs) : base(rhs)
             {
@@ -84,16 +59,12 @@ namespace TTT.Node
             return new Comma(MetaData as CommaMeta);
         }
 
-        public override void Initialize(ITimerable timer)
+        protected override void InitializeInternal()
         {
-            SetTimer(timer);
-            Length = 0;
             ChangeState(NodeState.FINISH);
         }
-        public override void Update()
-        {
-        }
-        protected override void OnPlay()
+
+        public override void OnPlay()
         {
         }
     }
@@ -115,43 +86,22 @@ namespace TTT.Node
             {
             }
         }
-
-        public override void Update()
-        {
-            if (State == NodeState.FINISH)
-            {
-                OnFinish();
-                return;
-            }
-
-            // Idle => Play
-            if (State == NodeState.IDLE && Timer.ElapsedTime > 0) ChangeState(NodeState.PLAYING);
-
-            if (IsPlaying)
-            {
-                OnPlay();
-            }
-            else
-            {
-                OnIdle();
-            }
-
-            if (Length <= Timer.ElapsedTime) ChangeState(NodeState.FINISH);
-        }
     }
 
     [Serializable]
-    public class SoundEffectNote : Note, IRhythmProviderBindable
+    public class SoundEffectNote : Note
     {
         public SoundEffectNote(SoundEffectNoteMeta meta) : base(meta)
         {
             TargetSound = meta.TargetSound;
+            AudioParameter = meta.AudioParameter;
         }
 
         [Serializable]
         public class SoundEffectNoteMeta : NoteMeta
         {
-            [EnumPaging] public SFXBundle.SFX TargetSound { get; private set; }
+            [ShowInInspector, EnumPaging] public SFXBundle.SFX TargetSound;
+            public AudioParameter AudioParameter;
 
             public override FlowNode Build()
             {
@@ -161,6 +111,7 @@ namespace TTT.Node
             public SoundEffectNoteMeta(SoundEffectNoteMeta rhs) : base(rhs)
             {
                 TargetSound = rhs.TargetSound;
+                AudioParameter = rhs.AudioParameter;
             }
             public override FlowNodeMeta DeepCopy()
             {
@@ -168,44 +119,26 @@ namespace TTT.Node
             }
         }
 
-        public override void Initialize(ITimerable timer) 
-        {
-            base.Initialize(timer);
-
-            Rhythm = GenerateRhythm();
-        }
-
         [EnumPaging] public SFXBundle.SFX TargetSound { get; private set; }
+        public AudioParameter AudioParameter { get; private set; }
 
         public override FlowNode DeepCopy()
         {
             return new SoundEffectNote(MetaData as SoundEffectNoteMeta);
         }
 
-        protected override void OnPlay()
+        protected override void OnEnterPlay()
         {
-            UltimateAudioManager.Instance.Play(TargetSound);
-            _provider.NotifyAll(Rhythm);
+
+            Debug.Log($"Play Sound");
+            if (Application.isPlaying)
+            {
+                UltimateAudioManager.Instance.Play(TargetSound, new AudioParameter(AudioParameter.Volume, AudioParameter.Pitch, (float)CurrentTime));
+            }
         }
 
-        private IRhythmProvider _provider { get; set; }
-
-        public void Bind(IRhythmProvider provider)
+        public override void OnPlay()
         {
-            _provider = provider;
-        }
-
-        [ShowInInspector] public Rhythm Rhythm { get; private set; }
-
-        [Button]
-        private void BakeRhythm()
-        {
-            Rhythm = GenerateRhythm();
-        }
-
-        private Rhythm GenerateRhythm()
-        {
-            return new Rhythm(Timer.MakeSubTimer(0.0f), RhythmProperty.OneBeatLength, RhythmProperty.SimpleBeatCurve);
         }
     }
 }

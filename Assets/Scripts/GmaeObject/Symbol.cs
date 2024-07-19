@@ -1,4 +1,8 @@
 ﻿using DG.Tweening;
+using System;
+using TTT.Measures;
+using TTT.Physics;
+using TTT.Players;
 using TTT.Rhythms;
 using TTT.System;
 using UnityEngine;
@@ -9,6 +13,8 @@ namespace TTT.GmaeObject
     public class Symbol : PrefabPoolable, IRhythmHandler
     {
         public Rigidbody Rigidbody { get; set; }
+        public Measure Measure { get; private set; }
+        public Player Player => Measure.Runtime.Attacker;
 
         public void Awake()
         {
@@ -19,6 +25,16 @@ namespace TTT.GmaeObject
         {
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero;
+            Rigidbody.position = Vector3.zero;
+            Rigidbody.rotation = Quaternion.identity;
+        }
+
+        public void Initialize(Measure measure, RigidbodyState state)
+        {
+            Measure = measure;
+            state.Restore(Rigidbody);
+            transform.position = state.position;
+            transform.rotation = state.rotation;
         }
 
         public void Receive(Rhythms.Rhythm ryhthm)
@@ -32,7 +48,6 @@ namespace TTT.GmaeObject
         public void ReleaseSmooth()
         {
             Renderer renderer = GetComponent<Renderer>();
-
             // Ensure we have a Renderer to fade out
             if (renderer != null)
             {
@@ -46,6 +61,24 @@ namespace TTT.GmaeObject
                 });
             }
         }
+
+        public override void Restore(object parameter)
+        {
+            if (parameter is RigidbodyState meta)
+            {
+                meta.Restore(Rigidbody);
+            }
+            else
+            {
+                throw new InvalidCastException($"State restore fail! {this}");
+            }
+        }
+
+        public override object Save()
+        {
+            return new RigidbodyState(Rigidbody);
+        }
+
         public void Update()
         {
         }

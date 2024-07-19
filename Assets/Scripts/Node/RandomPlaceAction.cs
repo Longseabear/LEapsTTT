@@ -15,10 +15,8 @@ namespace TTT.Node
         {
             public RandomPlaceActionMeta() : base() 
             {
-                Length = 2.0f;
-                Pivot = 0.5f;
             }
-            public RandomPlaceActionMeta(PlaceActionMeta rhs) : base(rhs)
+            public RandomPlaceActionMeta(RandomPlaceActionMeta rhs) : base(rhs)
             {
             }
 
@@ -32,24 +30,25 @@ namespace TTT.Node
                 return new RandomPlaceActionMeta(this);
             }
         }
+
         public RandomPlaceAction(PlaceActionMeta meta) : base(meta)
         {
         }
 
         public override FlowNode DeepCopy()
         {
-            throw new NotImplementedException();
+            return new RandomPlaceAction(MetaData as RandomPlaceActionMeta);
         }
         private float _timingOffset { get; set; }
 
         protected override void OnEnterPlay()
         {
             float minDelta = Mathf.Min(1.0f - Pivot, Pivot);
-            _timingOffset = UnityEngine.Random.Range(-Length * minDelta, Length * minDelta);
+            _timingOffset = UnityEngine.Random.Range(-(float)Length * minDelta, (float)Length * minDelta);
         }
-        protected override void OnPlay()
+        public override void OnPlay()
         {
-            if(State == NodeState.PLAYING && _pivotPosition + _timingOffset < Timer.ElapsedTime)
+            if(State == NodeState.PLAYING && CurrentTime > _pivotPosition + _timingOffset)
             {
                 float score = GetScore();
 
@@ -61,7 +60,7 @@ namespace TTT.Node
                     var UIcell = UltimateGamePlay.Instance.UIBoard.CellToUICell[cell];
 
                     Vector3 spawnPosition = UIcell.transform.position;
-                    PlaceSymbol(UIcell, spawnPosition, Color.blue);
+                    PlaceSymbol(UIcell, spawnPosition);
                 }
                 ChangeState(NodeState.FINISH);
             }

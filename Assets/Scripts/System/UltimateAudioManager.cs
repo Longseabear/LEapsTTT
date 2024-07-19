@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using TTT.Audio;
+using UnityEditor;
 using UnityEngine;
 
 namespace TTT.System
@@ -38,7 +39,7 @@ namespace TTT.System
         }
 
         [Button("Play SFX 2")]
-        public void Play_latest(SFXBundle.SFX target, AudioParameter param)
+        public void Play(SFXBundle.SFX target, AudioParameter param)
         {
             SFXBundle.Play(target, param);
         }
@@ -46,6 +47,16 @@ namespace TTT.System
         public SoundInfo GetInfo(SFXBundle.SFX target)
         {
             return SFXBundle.Info(target);
+        }
+
+        public void EditorInitialize()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                SFXBundle.Load();
+                Debug.Log("UltimateAudioManager has been initialized in the editor.");
+            }
         }
     }
 }
