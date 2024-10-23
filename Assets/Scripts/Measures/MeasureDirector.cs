@@ -44,7 +44,6 @@ namespace TTT.Measures
         private void Awake()
         {
             PlayableDirector = GetComponent<PlayableDirector>();
-            PlayableDirector.timeUpdateMode = DirectorUpdateMode.Manual;
             IsPlaying = false;
         }
 
@@ -62,6 +61,17 @@ namespace TTT.Measures
             PlayableDirector.playableAsset = MeasureDirectorMeta.Measure;
             PlayableDirector.time = ParentMeasure.Runtime.Timer.ElapsedTime;
 
+            // Set Audiosource
+            foreach (PlayableBinding output in PlayableDirector.playableAsset.outputs)
+            {
+                if (output.streamName == "Audio Track")
+                {
+                    PlayableDirector.SetGenericBinding(output.sourceObject, Camera.main.GetComponent<AudioSource>());
+                }
+            }
+            PlayableDirector.RebuildGraph();
+            PlayableDirector.playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+
             // In Playtime, Called OnPlayableCreate() and set node director.
             PlayableDirector.Play();
         }
@@ -70,13 +80,16 @@ namespace TTT.Measures
         {
             if (PlayableDirector.extrapolationMode == DirectorWrapMode.Loop)
             {
-                PlayableDirector.time = ParentMeasure.Runtime.Timer.ElapsedTime % PlayableDirector.duration;
+                PlayableDirector.time = (ParentMeasure.Runtime.Timer.ElapsedTime % PlayableDirector.duration);
+                //PlayableDirector.playableGraph.Evaluate(0.02f);
             }
             else
             {
-                PlayableDirector.time = ParentMeasure.Runtime.Timer.ElapsedTime;
+                //PlayableDirector.playableGraph.Evaluate(0.02f);
+                PlayableDirector.time = (ParentMeasure.Runtime.Timer.ElapsedTime);
             }
             PlayableDirector.Evaluate();
+
         }
 
         public override void OnReleased()

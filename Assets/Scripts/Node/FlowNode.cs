@@ -63,7 +63,7 @@ namespace TTT.Node
         [ShowInInspector] public double StartTime => FlowNodeClipInfo.TimelineClip.start; // global start time
         [ShowInInspector] public double EndTime => FlowNodeClipInfo.TimelineClip.end; // global end time
 
-        [ShowInInspector] public double CurrentTime => Playable.GetTime();
+        [ShowInInspector] public double CurrentTime => Playable.GetTime(); // 0 start time
         [ShowInInspector] public double Length => EndTime - StartTime;
 
         [ShowInInspector] public Measure ParentMeasure => FlowNodeClipInfo.ParentMeasure;

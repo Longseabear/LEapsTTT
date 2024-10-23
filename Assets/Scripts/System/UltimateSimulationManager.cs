@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using TTT.Assets.Scripts.Common;
 using TTT.Common;
 using TTT.Measures;
 using TTT.Players;
@@ -42,7 +43,7 @@ namespace TTT.System
         public float MeasureStartTIme => ProcessedMeasure * UltimateSimulationManager.OneMeasureBaseTime;
     }
 
-    [RequireComponent(typeof(Timer))]
+    [RequireComponent(typeof(Timer)), DefaultExecutionOrder(UpdateOrderConstant.SCRIPT_SIMULATOR_ORDER)]
     public class UltimateSimulationManager : MonoBehaviour
     {
         public static UltimateSimulationManager Instance { get; private set; }
@@ -52,6 +53,7 @@ namespace TTT.System
         [ShowInInspector, ShowIf("@this.SimulationParam != null")] public SimulationParam SimulationParam { get; private set; }
 
         public List<MeasureMeta> DefaultMeasures = new List<MeasureMeta>();
+        public Timer Timer;
 
         public void Awake()
         {
@@ -65,6 +67,8 @@ namespace TTT.System
             DontDestroyOnLoad(gameObject);
 
             UnityEngine.Physics.simulationMode = SimulationMode.Script;
+
+            Timer = GetComponent<Timer>();
         }
         [Button("Set Default Simulation Param")]
         public void InitializeSimulationParam()
@@ -106,40 +110,49 @@ namespace TTT.System
         // Measure => Measure 생성 => ...
         // Measure Unit은 2s.. 
 
-        public void Update()
+        public void OneFrameSimulation()
+        {
+            // currentMeeasureIndex
+            long currentMeasureIndex = (long)Mathf.Floor(SimulationParam.NextFrameTime / OneMeasureBaseTime);
+            if (SimulationParam.ProcessedMeasure < currentMeasureIndex)
+            {
+                // 평가 & 새로운 Measure 추가
+                // 1) 이벤트가 없으면 플레이어 교대 후 선택
+                if (SimulationParam.CurrentMeasure.NextMeasure != null)
+                {
+                    SimulationParam.Measure.Add(SimulationParam.CurrentMeasure.NextMeasure);
+                }
+                else
+                {
+                    UltimateGamePlay.Instance.PlayerSwap();
+                    SimulationParam.Measure.Add(UltimateGamePlay.Instance.Attacker.EvaluateAttackMeasure());
+                }
+                SimulationParam.CurrentMeasure.UnregisterSimulation();
+                SimulationParam.ProcessedMeasure++;
+                SimulationParam.CurrentMeasure.RegisterSimulation(new MeasureRuntimeData(((ITimerable)SimulationParam.LocalTimer).MakeSubTimer(SimulationParam.MeasureStartTIme),
+                    UltimateGamePlay.Instance.Attacker, UltimateGamePlay.Instance.Defender));
+            }
+
+            SimulationParam.LocalTimer.Set(SimulationParam.NextFrameTime);
+            foreach (var instance in SimulationParam.SimulatableInstance) instance.Simulate();
+            UnityEngine.Physics.Simulate(OneStepDeltaTime);
+        }
+        public void FixedUpdate()
         {
             if (SimulationParam == null) return;
 
             // frame index
             long elapsedFrame = (long)Mathf.Floor(SimulationParam.MainTimer.ElapsedTime / (float)OneStepDeltaTime);
 
-            for (; SimulationParam.ProcessedFrame < elapsedFrame; SimulationParam.ProcessedFrame++)
-            {
-                // currentMeeasureIndex
-                long currentMeasureIndex = (long)Mathf.Floor(SimulationParam.NextFrameTime / OneMeasureBaseTime);
-                if (SimulationParam.ProcessedMeasure < currentMeasureIndex)
-                {
-                    // 평가 & 새로운 Measure 추가
-                    // 1) 이벤트가 없으면 플레이어 교대 후 선택
-                    if(SimulationParam.CurrentMeasure.NextMeasure != null)
-                    {
-                        SimulationParam.Measure.Add(SimulationParam.CurrentMeasure.NextMeasure);
-                    }
-                    else
-                    {
-                        UltimateGamePlay.Instance.PlayerSwap();
-                        SimulationParam.Measure.Add(UltimateGamePlay.Instance.Attacker.EvaluateAttackMeasure());
-                    }
-                    SimulationParam.CurrentMeasure.UnregisterSimulation();
-                    SimulationParam.ProcessedMeasure++;
-                    SimulationParam.CurrentMeasure.RegisterSimulation(new MeasureRuntimeData(((ITimerable)SimulationParam.LocalTimer).MakeSubTimer(SimulationParam.MeasureStartTIme),
-                        UltimateGamePlay.Instance.Attacker, UltimateGamePlay.Instance.Defender));
-                }
-
-                SimulationParam.LocalTimer.Set(SimulationParam.NextFrameTime);
-                foreach (var instance in SimulationParam.SimulatableInstance) instance.Simulate();
-                UnityEngine.Physics.Simulate(OneStepDeltaTime);
-            }
+            // Update version
+            //for (; SimulationParam.ProcessedFrame < elapsedFrame; SimulationParam.ProcessedFrame++)
+            //{
+            //    OneFrameSimulation();
+            //}
+           
+            // Fixed Update version
+            OneFrameSimulation();
+            SimulationParam.ProcessedFrame++;
         }
     }
 }

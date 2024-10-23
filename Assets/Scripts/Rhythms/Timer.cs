@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using System;
+using TTT.Assets.Scripts.Common;
 using UnityEngine;
 
 namespace TTT.Rhythms
@@ -29,7 +30,7 @@ namespace TTT.Rhythms
         }
     }
 
-    [DefaultExecutionOrder(-100)]
+    [DefaultExecutionOrder(UpdateOrderConstant.SCRIPT_TIMER_ORDER)]
     public class Timer : MonoBehaviour, ITimerable
     {
         public float StartTime { get; set; }

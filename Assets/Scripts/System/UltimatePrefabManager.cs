@@ -107,7 +107,7 @@ namespace TTT.System
         {
             return () => {
                 var obj = Instantiate<PrefabPoolable>(prefabInfo.gameObject, parent);
-                obj.OnCreated();
+                obj.OnCreated(); 
                 return obj;
             };
         }

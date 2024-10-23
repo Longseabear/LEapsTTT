@@ -1,30 +1,8 @@
-﻿using FMOD;
-using FMODUnity;
-using System;
-using System.IO;
+﻿using System;
 using UnityEngine;
-
-#if UNITY_EDITOR
-#endif
-
 
 namespace TTT.Audio
 {
-    public struct SoundInfo
-    {
-        public float Length;
-
-        public SoundInfo(float soundLength)
-        {
-            Length = soundLength;
-        }
-    }
-
-    public interface IAudioVolume
-    {
-        float Volume { get; set; }
-    }
-
     [Serializable]
     public struct AudioParameter
     {
@@ -37,99 +15,6 @@ namespace TTT.Audio
             Volume = volume;
             Pitch = pitch;
             StartTime = startTime;
-        }
-    }
-
-    [Serializable]
-    public abstract class AudioBundle : IAudioVolume
-    {
-        public ChannelGroup ChannelGroup { get; protected set; }
-        public float Volume { get; set; } = 1.0f;
-        public abstract void Load();
-
-        public IAudioVolume Parent { get; protected set; } = null;
-        public float ParentVolume => Parent?.Volume ?? 1.0f;
-    }
-
-    [Serializable]
-    public abstract class AudioBundle<T> : AudioBundle where T : Enum
-    {
-        public abstract void Play(T target, AudioParameter _volume);
-    }
-
-    public class SFXBundle : AudioBundle<SFXBundle.SFX>
-    {
-        private static readonly string BundleFolderName = "SFX";
-
-        public Sound[] Sounds { get; private set; }
-        public Channel[] Channels { get; private set; }
-        public DSP[] pitchDSPs { get; private set; }
-
-        public enum SFX
-        {
-            drumsticks
-        }
-
-        public override void Load()
-        {
-            int count = Enum.GetValues(typeof(SFX)).Length;
-
-            ChannelGroup = new ChannelGroup();
-            Sounds = new Sound[count];
-            Channels = new Channel[count];
-            pitchDSPs = new DSP[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                string fileName = $"{Enum.GetName(typeof(SFX), i)}.ogg";
-                RuntimeManager.CoreSystem.createSound(Path.Combine(Application.streamingAssetsPath, BundleFolderName, fileName), MODE.CREATESAMPLE, out Sounds[i]);
-                RuntimeManager.CoreSystem.createDSPByType(DSP_TYPE.PITCHSHIFT, out pitchDSPs[i]);
-                
-            }
-
-            foreach (var channel in Channels)
-            {
-                channel.setChannelGroup(ChannelGroup);
-            }
-        }
-
-        public override void Play(SFX target, AudioParameter param)
-        {
-            int targetIndex = (int)target;
-
-            Channel channel = Channels[targetIndex];
-
-            // channel.stop();
-            RuntimeManager.CoreSystem.playSound(Sounds[targetIndex], ChannelGroup, false, out Channel newChannel);
-            
-            newChannel.addDSP(CHANNELCONTROL_DSP_INDEX.HEAD, pitchDSPs[targetIndex]);
-            pitchDSPs[targetIndex].setParameterFloat((int)DSP_PITCHSHIFT.PITCH, param.Pitch);
-
-            newChannel.setPaused(true);
-            newChannel.setVolume((param.Volume * Volume * ParentVolume));
-            newChannel.setPosition((uint)(param.StartTime * 1000.0f), FMOD.TIMEUNIT.MS);
-
-            newChannel.setPaused(false);
-        }
-
-        public SoundInfo Info(SFX target)
-        {
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying && Sounds == null)
-            {
-                Load();
-            }
-#endif
-            uint lengthInMilliseconds = 0;
-            FMOD.RESULT result = Sounds[(int)target].getLength(out lengthInMilliseconds, FMOD.TIMEUNIT.MS);
-
-            if (result != FMOD.RESULT.OK)
-            {
-                throw new Exception("Error getting sound length: " + result);
-            }
-
-            return new SoundInfo((float)lengthInMilliseconds / 1000f);
         }
     }
 }

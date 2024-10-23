@@ -1,54 +1,77 @@
-﻿using System.Collections.Generic;
+﻿using Sirenix.OdinInspector;
+using System;
+using System.Collections.Generic;
+using TTT.Common;
 using TTT.Rhythms;
 using UnityEngine;
 
 namespace TTT.System
 {
-    public class UltimateRhythmManager : MonoBehaviour, IRhythmProvider, IRhythmHandler, IRhythmProviderBindable
+    public class UltimateRhythmManager : MonoBehaviour
     {
         [Header("Instance")]
         public static UltimateRhythmManager Instance;
-        public IRhythmProvider MainRhythm { get; private set; }
 
-        public List<IRhythmHandler> RhythmHandlers { get; private set; }
-
-        public Rhythm Rhythm => MakeRhythm();
-
-        private Rhythm MakeRhythm()
+        [Serializable]
+        public class BeatUnit
         {
-            return MainRhythm.Rhythm;
-        }
-
-        public void Bind(IRhythmProvider mainRhythm)
-        {
-            MainRhythm.Unsubscribe(this);
-            MainRhythm = mainRhythm;
-            MainRhythm.Subscribe(this);
-        }
-
-        public void NotifyAll(Rhythm rhythm)
-        {
-            foreach (var handler in RhythmHandlers)
+            [ShowInInspector] public List<IRhythmHandler> Handlers = new List<IRhythmHandler>();
+            public BeatUnit()
             {
-                handler.Receive(rhythm);
+                Initialize();
+            }
+
+            public void Initialize()
+            {
+                Handlers = new List<IRhythmHandler>();
+            }
+            public void Register(IRhythmHandler handler)
+            {
+                Handlers.Add(handler);
+            }
+            public void Unregister(IRhythmHandler handler)
+            {
+                Handlers.Remove(handler);
+            }
+            public void Receive()
+            {
+                foreach (var handler in Handlers)
+                {
+                    handler.Receive();
+                }
             }
         }
 
-        public void Subscribe(IRhythmHandler handler)
+        public BeatUnit[] BeatUnits = new BeatUnit[Constant.NUM_BEAT_ON_MEASURE];
+
+
+        [Serializable]
+        public class BeatObjectInfo
         {
-            RhythmHandlers.Add(handler);
+            public GameObject GameObject;
+            public int MeasureIndex;
         }
 
-        public void Unsubscribe(IRhythmHandler handler)
-        {
-            RhythmHandlers.Remove(handler);
-        }
+        public List<BeatObjectInfo> InitialBeatObjectInfo;
 
-        public void Receive(Rhythm rhythm)
+        public void Awake()
         {
-            foreach (var handler in RhythmHandlers)
+            if (Instance != null && Instance != this)
             {
-                handler.Receive(rhythm);
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            foreach (var beatUnit in BeatUnits)
+            {
+                beatUnit.Initialize();
+            }
+            foreach (var item in InitialBeatObjectInfo)
+            {
+                BeatUnits[item.MeasureIndex].Register(item.GameObject.GetComponent<IRhythmHandler>());
             }
         }
     }

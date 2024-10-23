@@ -6,6 +6,8 @@ using TTT.Rhythms;
 using TTT.System;
 using UnityEngine;
 using UnityEngine.Playables;
+using static TTT.Node.SoundEffectNote;
+using static TTT.Notes.FLowNodeVisualization;
 
 namespace TTT.Node
 {
@@ -98,9 +100,9 @@ namespace TTT.Node
         }
 
         [Serializable]
-        public class SoundEffectNoteMeta : NoteMeta
+        public class SoundEffectNoteMeta : NoteMeta, IAudioVisualizer
         {
-            [ShowInInspector, EnumPaging] public SFXBundle.SFX TargetSound;
+            [ShowInInspector, EnumPaging] public AudioClip TargetSound;
             public AudioParameter AudioParameter;
 
             public override FlowNode Build()
@@ -117,9 +119,14 @@ namespace TTT.Node
             {
                 return new SoundEffectNoteMeta(this);
             }
+
+            public AudioClip GetAudioClipForVisualize()
+            {
+                return TargetSound;
+            }
         }
 
-        [EnumPaging] public SFXBundle.SFX TargetSound { get; private set; }
+        [EnumPaging] public AudioClip TargetSound { get; private set; }
         public AudioParameter AudioParameter { get; private set; }
 
         public override FlowNode DeepCopy()
@@ -129,16 +136,69 @@ namespace TTT.Node
 
         protected override void OnEnterPlay()
         {
-
-            Debug.Log($"Play Sound");
-            if (Application.isPlaying)
+            double targetTime = Length * Pivot - CurrentTime;
+            double startTime = 0;
+            if(targetTime < 0)
             {
-                UltimateAudioManager.Instance.Play(TargetSound, new AudioParameter(AudioParameter.Volume, AudioParameter.Pitch, (float)CurrentTime));
+                startTime = -targetTime;
+                targetTime = 0;
             }
+            double delay = targetTime;
+
+            UltimateAudioManager.Instance.PlayWithDelay(TargetSound, new AudioParameter(AudioParameter.Volume, AudioParameter.Pitch, (float)startTime), delay);
         }
 
         public override void OnPlay()
         {
+        }
+    }
+
+    [Serializable]
+    public class BeatSignalNode : Note
+    {
+        public BeatSignalNode(BeatSignalNodeMeta meta) : base(meta)
+        {
+        }
+
+        [Serializable]
+        public class BeatSignalNodeMeta : NoteMeta
+        {
+            public override FlowNode Build()
+            {
+                return new BeatSignalNode(this);
+            }
+            public BeatSignalNodeMeta() : base() { }
+            public BeatSignalNodeMeta(BeatSignalNodeMeta rhs) : base(rhs)
+            {
+            }
+            public override FlowNodeMeta DeepCopy()
+            {
+                return new BeatSignalNodeMeta(this);
+            }
+        }
+
+        public int TargetBeatIndex = 0;
+        public double TargetTime = 0;
+        protected override void InitializeInternal()
+        {
+            TargetTime = Length * Pivot;
+            double targetGlobalTime = StartTime + TargetTime;
+            TargetBeatIndex = (int)(Mathf.Floor((float)(targetGlobalTime / RhythmProperty.BaseMeasureLength) * RhythmProperty.NumBeatInMeasure));
+        }
+
+        public override void OnPlay()
+        {
+            if(CurrentTime > TargetTime)
+            {
+                UltimateRhythmManager.Instance.BeatUnits[TargetBeatIndex].Receive();
+                ChangeState(NodeState.FINISH);
+            }
+        }
+
+        public override FlowNode DeepCopy()
+        {
+            return new BeatSignalNode(MetaData as BeatSignalNodeMeta);
+
         }
     }
 }

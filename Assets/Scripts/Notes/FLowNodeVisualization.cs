@@ -1,9 +1,20 @@
-﻿namespace TTT.Notes
+﻿using UnityEngine;
+
+namespace TTT.Notes
 {
     public static class FLowNodeVisualization
     {
-        public interface IFlowNodePivot
+        public interface IVisualizer
         {
+        }
+
+        public interface IFlowNodePivot : IVisualizer
+        {
+        }
+
+        public interface IAudioVisualizer : IVisualizer
+        {
+            public AudioClip GetAudioClipForVisualize();
         }
     }
 }

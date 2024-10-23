@@ -8,6 +8,7 @@ namespace TTT.Common
         public static float BaseMeasureLength { get; } = 2.0f;
         public static float BaseBeatDuration { get; } = 0.5f;
         public static float OneBeatLength { get; } = 0.2f;
+        public static int NumBeatInMeasure { get; } = 4;
 
         public static AnimationCurve SimpleBeatCurve { get; private set; }
 

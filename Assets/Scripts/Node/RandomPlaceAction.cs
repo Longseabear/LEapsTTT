@@ -44,7 +44,7 @@ namespace TTT.Node
         protected override void OnEnterPlay()
         {
             float minDelta = Mathf.Min(1.0f - Pivot, Pivot);
-            _timingOffset = UnityEngine.Random.Range(-(float)Length * minDelta, (float)Length * minDelta);
+            _timingOffset = 0.0f; //;UnityEngine.Random.Range(-(float)Length * minDelta, (float)Length * minDelta); deprecated
         }
         public override void OnPlay()
         {

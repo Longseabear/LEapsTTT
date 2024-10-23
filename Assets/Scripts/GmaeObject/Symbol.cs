@@ -37,7 +37,7 @@ namespace TTT.GmaeObject
             transform.rotation = state.rotation;
         }
 
-        public void Receive(Rhythms.Rhythm ryhthm)
+        public void Receive()
         {
         }
 

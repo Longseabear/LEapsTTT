@@ -1,5 +1,4 @@
-﻿using FMOD;
-using System;
+﻿using System;
 using TTT.Measures;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -52,5 +51,10 @@ namespace TTT.Notes.FlowNode
 
 
         public override double duration => 0.5f;
+
+        public void OnValidate()
+        {
+            pivot = template.MetaData.Pivot;
+        }
     }
 }

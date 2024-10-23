@@ -33,7 +33,7 @@ namespace TTT.Rhythms
     }
     public interface IRhythmHandler
     {
-        public void Receive(Rhythm ryhthm);
+        public void Receive();
     }
     public interface IRhythmable
     {

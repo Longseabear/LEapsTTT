@@ -16,7 +16,7 @@ namespace TTT.Notes.FlowNode
     public class FlowNodeBehaviour : PlayableBehaviour
     {
         [SerializeReference] public TTT.Node.FlowNode.FlowNodeMeta MetaData;
-        [ShowInInspector] private TTT.Node.FlowNode node { get; set; }
+        [ShowInInspector] public TTT.Node.FlowNode node { get; private set; }
         public double StartTime { get; set; }
 
         public override void OnPlayableCreate(Playable playable)
